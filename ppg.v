@@ -1,26 +1,26 @@
 // partial product generate
-module ppg8(
+module #(shamt) ppg(
     input  reg  [2:0]       weight,
-    input  reg  [7:0]       in,
-    output reg  [15:0]      pp      // partial product
+    input  reg  [33:0]      in,
+    input  reg  [33:0]      neg_in;
+    output reg  [63:0]      pp          // partial product
 );
-    wire [9:0] sext = {{2{in[7]}}, in};     // sext 8 -> 10
-    reg  [9:0] temp;
+    reg  [33:0] temp;
     always @*   begin
         case (weight)
             // -2
-            3'b110: temp = (~sext + 1) << 1;
+            3'b110: temp = neg_in << 1;
             // -1
-            3'b111: temp = ~sext + 1;
+            3'b111: temp = neg_in;
             // 0
             3'b000: temp = 0;
             // 1
-            3'b001: temp = sext;
+            3'b001: temp = in;
             // 2
-            3'b010: temp = sext << 1;
+            3'b010: temp = in << 1;
             default:
-                temp = 114514;     // should not happen
+                temp = 114514;      // should not happen
         endcase
     end
-    assign pp = {{6{temp[9]}}, temp};       // sext 10 -> 16
+    assign pp = {{30{temp[33]}}, temp} << shamt;       // sext 34 -> 64
 endmodule
